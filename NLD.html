@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Final Expense Lead Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    .form-container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Final Expense Lead Form</h2>
+    <form action="https://nexlevel-direct.trackdrive.com/posting_instructions/InboundWebhook/1714d509-cf99-4a42-b13b-60ff2940de5d/?traffic_source_id=10166097&trackdrive_number_id=22760633" method="POST">
+      
+      <label for="first_name">First Name:</label>
+      <input type="text" id="first_name" name="first_name" required>
+
+      <label for="last_name">Last Name:</label>
+      <input type="text" id="last_name" name="last_name">
+
+      <label for="phone_number">Phone Number:</label>
+      <input type="text" id="phone_number" name="phone_number" required placeholder="e.g. 5551234567">
+
+      <label for="zip_code">Zip Code:</label>
+      <input type="text" id="zip_code" name="zip_code" required>
+
+      <label for="state">State:</label>
+      <input type="text" id="state" name="state">
+
+      <label for="call_start_time">Call Start Time:</label>
+      <input type="datetime-local" id="call_start_time" name="call_start_time" required>
+
+      <input type="hidden" name="source" value="Waqas_FE">
+
+      <button type="submit">Submit Lead</button>
+    </form>
+  </div>
+
+  <script>
+    // Auto-fill current date/time in ISO format
+    window.onload = function () {
+      const now = new Date();
+      const offset = now.getTimezoneOffset();
+      const localISOTime = new Date(now.getTime() - (offset * 60000)).toISOString().slice(0,16);
+      document.getElementById('call_start_time').value = localISOTime;
+    };
+  </script>
+</body>
+</html>
