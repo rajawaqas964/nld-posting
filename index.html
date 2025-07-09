@@ -66,7 +66,7 @@
 <body>
   <div class="form-container">
     <h2>Final Expense Lead Form</h2>
-    <form id="leadForm">
+    <form id="leadForm" action="https://nexlevel-direct.trackdrive.com/posting_instructions/InboundWebhook/1714d509-cf99-4a42-b13b-60ff2940de5d" method="POST">
       <label for="first_name">First Name:</label>
       <input type="text" id="first_name" name="first_name" required />
 
@@ -95,53 +95,34 @@
   </div>
 
   <script>
-    // Autofill call_start_time with current datetime
+    // Auto-fill call start time
     window.onload = function () {
       const now = new Date();
       const offset = now.getTimezoneOffset();
-      const localISOTime = new Date(now.getTime() - offset * 60000)
-        .toISOString()
-        .slice(0, 16);
+      const localISOTime = new Date(now.getTime() - offset * 60000).toISOString().slice(0, 16);
       document.getElementById("call_start_time").value = localISOTime;
     };
 
-    document.getElementById("leadForm").addEventListener("submit", function (e) {
-      e.preventDefault(); // Stop default form submission
-      const messageBox = document.getElementById("messageBox");
-      messageBox.innerText = "Checking buyer availability...";
+    // Ping BEFORE form submission but don’t stop submission
+    const form = document.getElementById("leadForm");
+    const messageBox = document.getElementById("messageBox");
 
-      // Step 1: PING request
+    form.addEventListener("submit", function () {
+      // Async ping request (won’t block the form)
       fetch("https://nexlevel-direct.trackdrive.com/api/v1/inbound_webhooks/ping/check_fe_buyers_availability?trackdrive_number=%2B18442849310&traffic_source_id=10166097")
-        .then((response) => response.json())
+        .then((res) => res.json())
         .then((data) => {
           if (data.status === "available") {
-            messageBox.innerText = "Buyer available. Submitting lead...";
-
-            // Step 2: POST form data
-            const form = document.getElementById("leadForm");
-            const formData = new FormData(form);
-
-            fetch("https://nexlevel-direct.trackdrive.com/posting_instructions/InboundWebhook/1714d509-cf99-4a42-b13b-60ff2940de5d", {
-              method: "POST",
-              body: formData,
-            })
-              .then((res) => res.json())
-              .then((result) => {
-                messageBox.innerText = "✅ Lead submitted successfully!";
-                form.reset();
-              })
-              .catch((err) => {
-                console.error(err);
-                messageBox.innerText = "❌ Error submitting lead.";
-              });
+            messageBox.innerText = "✅ Buyer is available. Lead is being submitted...";
           } else {
-            messageBox.innerText = "❌ No buyers available right now. Try later.";
+            messageBox.innerText = "⚠️ No buyer available, but lead will still be submitted.";
           }
         })
-        .catch((error) => {
-          console.error(error);
-          messageBox.innerText = "❌ Ping request failed.";
+        .catch(() => {
+          messageBox.innerText = "⚠️ Ping failed. Submitting lead anyway.";
         });
+
+      // ⚠️ Note: we don’t preventDefault(), so form submits no matter what
     });
   </script>
 </body>
