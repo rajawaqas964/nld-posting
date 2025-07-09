@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Final Expense Lead Form</title>
   <style>
     body {
@@ -17,7 +17,7 @@
       background: #fff;
       padding: 25px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     }
 
     h2 {
@@ -55,45 +55,94 @@
     button:hover {
       background-color: #218838;
     }
+
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="form-container">
     <h2>Final Expense Lead Form</h2>
-    <form action="https://nexlevel-direct.trackdrive.com/api/v1/inbound_webhooks/ping/check_fe_buyers_availability?trackdrive_number=%2B18442849310&traffic_source_id=10166097">
-      
+    <form id="leadForm">
       <label for="first_name">First Name:</label>
-      <input type="text" id="first_name" name="first_name" required>
+      <input type="text" id="first_name" name="first_name" required />
 
       <label for="last_name">Last Name:</label>
-      <input type="text" id="last_name" name="last_name">
+      <input type="text" id="last_name" name="last_name" />
 
       <label for="phone_number">Phone Number:</label>
-      <input type="text" id="phone_number" name="phone_number" required placeholder="e.g. 5551234567">
+      <input type="text" id="phone_number" name="phone_number" required placeholder="e.g. 5551234567" />
 
       <label for="zip_code">Zip Code:</label>
-      <input type="text" id="zip_code" name="zip_code" required>
+      <input type="text" id="zip_code" name="zip_code" required />
 
       <label for="state">State:</label>
-      <input type="text" id="state" name="state">
+      <input type="text" id="state" name="state" />
 
       <label for="call_start_time">Call Start Time:</label>
-      <input type="datetime-local" id="call_start_time" name="call_start_time" required>
+      <input type="datetime-local" id="call_start_time" name="call_start_time" required />
 
-      <input type="hidden" name="source" value="Waqas_FE">
+      <input type="hidden" name="source" value="Waqas_FE" />
+      <input type="hidden" name="traffic_source_id" value="10166097" />
+      <input type="hidden" name="trackdrive_number_id" value="22760633" />
 
       <button type="submit">Submit Lead</button>
     </form>
+    <div class="message" id="messageBox"></div>
   </div>
 
   <script>
-    // Auto-fill current date/time in ISO format
+    // Autofill call_start_time with current datetime
     window.onload = function () {
       const now = new Date();
       const offset = now.getTimezoneOffset();
-      const localISOTime = new Date(now.getTime() - (offset * 60000)).toISOString().slice(0,16);
-      document.getElementById('call_start_time').value = localISOTime;
+      const localISOTime = new Date(now.getTime() - offset * 60000)
+        .toISOString()
+        .slice(0, 16);
+      document.getElementById("call_start_time").value = localISOTime;
     };
+
+    document.getElementById("leadForm").addEventListener("submit", function (e) {
+      e.preventDefault(); // Stop default form submission
+      const messageBox = document.getElementById("messageBox");
+      messageBox.innerText = "Checking buyer availability...";
+
+      // Step 1: PING request
+      fetch("https://nexlevel-direct.trackdrive.com/api/v1/inbound_webhooks/ping/check_fe_buyers_availability?trackdrive_number=%2B18442849310&traffic_source_id=10166097")
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "available") {
+            messageBox.innerText = "Buyer available. Submitting lead...";
+
+            // Step 2: POST form data
+            const form = document.getElementById("leadForm");
+            const formData = new FormData(form);
+
+            fetch("https://nexlevel-direct.trackdrive.com/posting_instructions/InboundWebhook/1714d509-cf99-4a42-b13b-60ff2940de5d", {
+              method: "POST",
+              body: formData,
+            })
+              .then((res) => res.json())
+              .then((result) => {
+                messageBox.innerText = "✅ Lead submitted successfully!";
+                form.reset();
+              })
+              .catch((err) => {
+                console.error(err);
+                messageBox.innerText = "❌ Error submitting lead.";
+              });
+          } else {
+            messageBox.innerText = "❌ No buyers available right now. Try later.";
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          messageBox.innerText = "❌ Ping request failed.";
+        });
+    });
   </script>
 </body>
 </html>
